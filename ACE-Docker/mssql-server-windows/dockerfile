@@ -6,12 +6,15 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
 EXPOSE 1433
 
-ENV sa_password _
-
 WORKDIR c:\\windows\\temp
 
-COPY start.ps1 .
+# create directory within SQL container for database files
+RUN powershell -Command (mkdir C:\\MSSQL)
 
-COPY ace.sql .
+#copy the database files from host to container
+COPY ACEWebService.mdf C:\\MSSQL
+COPY ACEWebService_log.ldf C:\\MSSQL
 
-CMD ./start.ps1 -sa_password $env:sa_password -Verbose
+ENV ACCEPT_EULA=Y
+
+ENV attach_dbs="[{'dbName':'ACEWebService','dbFiles':['C:\\MSSQL\\ACEWebService.mdf','C:\\MSSQL\\ACEWebService_log.ldf']}]"
